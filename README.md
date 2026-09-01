@@ -4,6 +4,20 @@ A high-fidelity Gmail-inspired Flutter client for the [Resend.com](https://resen
 
 Remail (formerly Rusend-Next) provides a modern, clean, and intuitive interface for managing your Resend emails, mirroring the familiar Gmail experience while leveraging the powerful Resend API.
 
+<div align="center">
+
+[![Get it on F-Droid](https://fdroid.gitlab.io/artwork/badge/get-it-on.png)](https://f-droid.org/zh_Hans/packages/ink.hifuu.rusend_next/)
+
+**Download on F-Droid** — [ink.hifuu.rusend_next](https://f-droid.org/zh_Hans/packages/ink.hifuu.rusend_next/)
+
+</div>
+
+## Screenshots
+
+<div align="center">
+  <img src="assets/screenshot.png" alt="Remail Screenshot" width="300">
+</div>
+
 ## Features
 
 - **Inbox & Sent:** View your received and sent emails with ease.
