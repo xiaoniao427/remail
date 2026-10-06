@@ -36,11 +36,11 @@ class EmailDetailScreen extends StatelessWidget {
       ).showSnackBar(SnackBar(content: Text('Downloading $filename...')));
 
       final bytes = await service.downloadAttachment(id, attachmentId);
-      Directory? dir;
-      if (Platform.isLinux || Platform.isWindows || Platform.isMacOS) {
-        dir = await getDownloadsDirectory();
-      }
-      dir ??= await getApplicationDocumentsDirectory();
+      final downloadDir =
+          (Platform.isLinux || Platform.isWindows || Platform.isMacOS)
+              ? await getDownloadsDirectory()
+              : null;
+      final dir = downloadDir ?? await getApplicationDocumentsDirectory();
 
       final filePath = path.join(dir.path, filename);
       final file = File(filePath);
@@ -56,7 +56,7 @@ class EmailDetailScreen extends StatelessWidget {
           action: SnackBarAction(
             label: 'Open Folder',
             onPressed: () async {
-              final uri = Uri.directory(dir!.path);
+              final uri = Uri.directory(dir.path);
               try {
                 if (await canLaunchUrl(uri)) {
                   await launchUrl(uri);
