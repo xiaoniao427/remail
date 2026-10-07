@@ -1,120 +1,128 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _LoginScreenState extends State<LoginScreen> {
+  final _apiKeyController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _emailController;
-  late final TextEditingController _nameController;
-
-  @override
-  void initState() {
-    super.initState();
-    final auth = context.read<AuthProvider>();
-    _emailController = TextEditingController(text: auth.defaultFrom ?? '');
-    _nameController = TextEditingController(text: auth.displayName ?? '');
-  }
 
   @override
   void dispose() {
+    _apiKeyController.dispose();
     _emailController.dispose();
     _nameController.dispose();
     super.dispose();
   }
 
-  Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
+  void _login() async {
+    if (_formKey.currentState!.validate()) {
+      await context.read<AuthProvider>().login(
+        _apiKeyController.text.trim(),
+        _emailController.text.trim(),
+        _nameController.text.trim(),
+      );
     }
-
-    await context.read<AuthProvider>().updateProfile(
-      defaultFrom: _emailController.text.trim(),
-      displayName: _nameController.text.trim(),
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Sender profile updated')));
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Settings', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(height: 8),
-          Text(
-            'Update the default sender name and email used when composing mail.',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: Icon(Icons.badge_outlined),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your sender name';
-                        }
-                        return null;
-                      },
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(Icons.email, size: 64, color: Colors.blue),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.welcomeToRemail,
+                    style: Theme.of(context).textTheme.headlineMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(
+                      labelText: l10n.username,
+                      prefixIcon: const Icon(Icons.badge_outlined),
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 16),
-                    TextFormField(
-                      controller: _emailController,
-                      decoration: const InputDecoration(
-                        labelText: 'Default From Email',
-                        prefixIcon: Icon(Icons.alternate_email),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your sender email';
-                        }
-                        if (!value.contains('@')) {
-                          return 'Please enter a valid email address';
-                        }
-                        return null;
-                      },
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) {
+                        return l10n.pleaseEnterSenderName;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(
+                      labelText: l10n.defaultFromEmail,
+                      prefixIcon: const Icon(Icons.person),
+                      border: const OutlineInputBorder(),
                     ),
-                    const SizedBox(height: 20),
-                    FilledButton.icon(
-                      onPressed: _save,
-                      icon: const Icon(Icons.save),
-                      label: const Text('Save'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return l10n.pleaseEnterSenderEmail;
+                      }
+                      if (!value.contains('@')) {
+                        return l10n.pleaseEnterValidEmail;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _apiKeyController,
+                    decoration: InputDecoration(
+                      labelText: l10n.resendApiKey,
+                      prefixIcon: const Icon(Icons.key),
+                      border: const OutlineInputBorder(),
+                      helperText: 'Starts with re_',
                     ),
-                  ],
-                ),
+                    obscureText: true,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return l10n.pleaseEnterApiKey;
+                      }
+                      if (!value.startsWith('re_')) {
+                        return l10n.apiKeyStartsWithRe;
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  FilledButton(
+                    onPressed: _login,
+                    child: Text(l10n.login),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
 }
+
